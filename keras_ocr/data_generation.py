@@ -184,29 +184,48 @@ def _strip_lines(lines):
     return lines
 
 
-def get_backgrounds(cache_dir=None):
+def get_backgrounds(cache_dir=None, custom=None, extension=None):
     """Download a set of pre-reviewed backgrounds.
 
     Args:
         cache_dir: Where to save the dataset. By default, data will be
             saved to ~/.keras-ocr.
+        custom: Flag for custom data usage
+        extension: custom data extension
 
     Returns:
         A list of background filepaths.
     """
     if cache_dir is None:
         cache_dir = os.path.expanduser(os.path.join("~", ".keras-ocr"))
-    backgrounds_dir = os.path.join(cache_dir, "backgrounds")
-    backgrounds_zip_path = tools.download_and_verify(
-        url="https://github.com/faustomorales/keras-ocr/releases/download/v0.8.4/backgrounds.zip",
-        sha256="f263ed0d55de303185cc0f93e9fcb0b13104d68ed71af7aaaa8e8c91389db471",
-        filename="backgrounds.zip",
-        cache_dir=cache_dir,
-    )
-    if len(glob.glob(os.path.join(backgrounds_dir, "*"))) != 1035:
-        with zipfile.ZipFile(backgrounds_zip_path) as zfile:
-            zfile.extractall(backgrounds_dir)
-    return glob.glob(os.path.join(backgrounds_dir, "*.jpg"))
+
+    folder_name = "backgrounds"
+    current_ext = '.jpg'
+    if custom is not None:
+        try:
+            assert isinstance(custom, str), 'string format error'
+            folder_name = custom
+        except Exception as e:
+            print(f'Error: {e}')
+    if extension is not None:
+        try:
+            assert extension in ['.jpg', '.png'], 'extension error'
+            current_ext = extension
+        except Exception as e:
+            print(f'Error: {e}')
+
+    backgrounds_dir = os.path.join(cache_dir, folder_name)
+    if folder_name == 'backgrounds':
+        backgrounds_zip_path = tools.download_and_verify(
+            url="https://github.com/faustomorales/keras-ocr/releases/download/v0.8.4/backgrounds.zip",
+            sha256="f263ed0d55de303185cc0f93e9fcb0b13104d68ed71af7aaaa8e8c91389db471",
+            filename="backgrounds.zip",
+            cache_dir=cache_dir,
+        )
+        if len(glob.glob(os.path.join(backgrounds_dir, "*"))) != 1035:
+            with zipfile.ZipFile(backgrounds_zip_path) as zfile:
+                zfile.extractall(backgrounds_dir)
+    return glob.glob(os.path.join(backgrounds_dir, f"*{current_ext}"))  # .jpg
 
 
 def get_fonts(
