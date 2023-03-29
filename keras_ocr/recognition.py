@@ -1,5 +1,6 @@
 # pylint: disable=invalid-name,too-many-locals,too-many-arguments,line-too-long,no-value-for-parameter,unexpected-keyword-arg
 # We ignore no-value-for-parameter and unexpected-keyword-arg because of https://github.com/PyCQA/pylint/issues/3613
+import os.path
 import typing
 import string
 
@@ -368,10 +369,8 @@ class Recognizer:
             to False to use a custom alphabet).
     """
 
-    def __init__(self, alphabet=None, weights="kurapan", build_params=None):
-        assert (
-            alphabet or weights
-        ), "At least one of alphabet or weights must be provided."
+    def __init__(self, alphabet=None, weights="kurapan", build_params=None, custom_weights=None):
+        assert (alphabet or weights), "At least one of alphabet or weights must be provided."
         if weights is not None:
             build_params = build_params or PRETRAINED_WEIGHTS[weights]["build_params"]
             alphabet = alphabet or PRETRAINED_WEIGHTS[weights]["alphabet"]
@@ -408,6 +407,8 @@ class Recognizer:
                         sha256=weights_dict["weights"]["notop"]["sha256"],
                     )
                 )
+        if custom_weights is not None and os.path.exists(custom_weights):
+            self.model.load_weights(custom_weights)
 
     def get_batch_generator(self, image_generator, batch_size=8, lowercase=False):
         """

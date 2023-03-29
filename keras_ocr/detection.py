@@ -1,4 +1,5 @@
 # pylint: disable=invalid-name,too-many-locals,line-too-long,no-else-raise,too-many-arguments,no-self-use,too-many-statements,stop-iteration-return,import-outside-toplevel
+import os.path
 import typing
 
 # The PyTorch portions of this code are subject to the following copyright notice.
@@ -675,10 +676,12 @@ class Detector:
         load_from_torch=False,
         optimizer="adam",
         backbone_name="vgg",
+        custom_weights=None
     ):
         if weights is not None:
             pretrained_key = (weights, load_from_torch)
             assert backbone_name == "vgg", "Pretrained weights available only for VGG."
+
             assert (
                 pretrained_key in PRETRAINED_WEIGHTS
             ), "Selected weights configuration not found."
@@ -690,6 +693,10 @@ class Detector:
             )
         else:
             weights_path = None
+
+        if custom_weights is not None and os.path.exists(custom_weights):
+            weights_path = custom_weights
+
         self.model = build_keras_model(
             weights_path=weights_path, backbone_name=backbone_name
         )
